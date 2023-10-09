@@ -27,6 +27,8 @@ export class AuthService {
 
   private setAuthentication(user: User, token: string): boolean {
 
+    console.log("SET AUTH TOKEN", token);
+
     this._currentUser.set( user );
     this._authStatus.set( AuthStatus.authenticated );
     localStorage.setItem('token', token);
@@ -57,7 +59,10 @@ export class AuthService {
     const url = `${this.baseUrl}/auth/check-token`;
     const token = localStorage.getItem('token');
 
-    if (!token) return of(false);
+    if (!token) {
+      this.logout();
+      return of(false);
+    }
 
     console.log("TOKEN", token);
 
@@ -73,9 +78,18 @@ export class AuthService {
           catchError( (err) => {
             console.log("Error", err);
             this._authStatus.set( AuthStatus.notAuthenticated );
+            console.log("CHECK STATUS TOKEN", token);
             return of(false)
           })
         );
+
+  }
+
+
+  logout(): void {
+    this._currentUser.set( null );
+    this._authStatus.set( AuthStatus.notAuthenticated );
+    localStorage.removeItem('token');
   }
 
 
